@@ -2,135 +2,48 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROPART V12 | DIAGNOSTIC PREDICTIVO</title>
+    <title>PROPART V12 | CONEXIÓN REAL V-LINK</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        :root {
-            --neon-blue: #00d4ff;
-            --neon-green: #39ff14;
-            --neon-pink: #ff007f;
-            --glass: rgba(11, 14, 20, 0.98);
-        }
-
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- PORTADA --- */
-        #intro-screen {
-            position: fixed; width: 100%; height: 100%; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
-        }
-
-        /* --- HEADER --- */
-        header {
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #222;
-        }
+        :root { --neon-blue: #00d4ff; --neon-green: #39ff14; --glass: rgba(10, 10, 15, 0.98); }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { padding: 15px 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #222; }
         #brand { font-size: 28px; font-weight: bold; color: var(--neon-blue); letter-spacing: 3px; }
-
-        /* --- LAYOUT PRINCIPAL --- */
-        .top-section {
-            display: grid;
-            grid-template-columns: 300px 1fr 350px;
-            gap: 15px;
-            padding: 15px;
-            flex: 1;
-        }
-
-        .panel {
-            background: var(--glass);
-            border: 1px solid #222;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- BOTONES --- */
-        .btn-v12 {
-            width: 100%; padding: 12px; margin-bottom: 8px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            cursor: pointer; font-weight: bold; text-transform: uppercase;
-        }
-        .btn-v12:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
-
-        /* --- GRÁFICA INFERIOR (ANCHURA TOTAL) --- */
-        .bottom-section {
-            height: 300px;
-            padding: 0 15px 15px 15px;
-        }
-        #full-graph {
-            width: 100%; height: 100%;
-            background: #050505;
-            border: 1px solid #222;
-            border-radius: 10px;
-        }
-
-        /* --- MONITORES --- */
-        .metric-card {
-            background: #080808; border-left: 4px solid var(--neon-pink);
-            padding: 12px; margin-bottom: 10px;
-        }
-        .val { font-size: 32px; font-family: monospace; color: #fff; }
-
-        .yuls-console {
-            background: #000; color: var(--neon-green);
-            font-family: 'Courier New', monospace; font-size: 11px;
-            padding: 10px; flex-grow: 1; overflow-y: auto; border: 1px solid #111;
-        }
+        .top-section { display: grid; grid-template-columns: 300px 1fr 350px; gap: 15px; padding: 15px; flex: 1; }
+        .panel { background: var(--glass); border: 1px solid #222; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; }
+        .btn-v12 { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--neon-blue); color: var(--neon-blue); cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-v12:hover { background: var(--neon-blue); color: #000; }
+        .bottom-section { height: 350px; padding: 0 15px 15px 15px; }
+        #full-graph { width: 100%; height: 100%; background: #050505; border: 1px solid #222; border-radius: 10px; }
+        .metric-card { background: #080808; border-left: 4px solid #ff007f; padding: 12px; margin-bottom: 10px; }
+        .val { font-size: 32px; font-family: monospace; }
+        #yuls-log { background: #000; color: var(--neon-green); font-family: monospace; font-size: 11px; padding: 10px; flex-grow: 1; overflow-y: auto; border: 1px solid #111; }
     </style>
 </head>
 <body>
 
-<div id="intro-screen">
-    <h1 style="color: var(--neon-blue); font-size: 50px;">PROPART V12</h1>
-    <button class="btn-v12" style="width: 250px; border-radius: 30px;" onclick="iniciarV12()">CONECTAR ESCÁNER</button>
-</div>
-
 <header>
     <div id="brand">PROPART V12</div>
-    <div id="vlink-tag" style="color: #444;">V-LINK STATUS: OFFLINE</div>
+    <div id="vlink-tag" style="color: #f00;">● V-LINK OFFLINE</div>
 </header>
 
 <div class="top-section">
     <div class="panel">
-        <h3 style="color: #555; font-size: 12px;">MENÚ PRINCIPAL</h3>
-        <button class="btn-v12" onclick="cmd('scanner')">Scanner V-Link</button>
-        <button class="btn-v12" onclick="cmd('sensores')">Sensores (Live)</button>
-        <button class="btn-v12" onclick="cmd('tba')">Calibrar TBA</button>
-        <button class="btn-v12" onclick="cmd('sincro')">Sincro CKP/CMP</button>
-        <button class="btn-v12" onclick="cmd('dtc')">DTC Fallas</button>
-        <button class="btn-v12" onclick="cmd('propart')">PROPART DATE</button>
+        <h3>8 DE PODER</h3>
+        <button class="btn-v12" onclick="conectarReal()">CONECTAR V-LINK (REAL)</button>
+        <button class="btn-v12" onclick="leerSensores()">LEER SENSORES</button>
+        <button class="btn-v12">CALIBRAR TBA</button>
+        <button class="btn-v12">DIAGRAMAS</button>
+        <button class="btn-v12">PROPART DATE</button>
     </div>
-
-    <div class="panel">
-        <h3 style="color: #555; font-size: 12px;">VISUALIZADOR CENTRAL</h3>
-        <div id="center-msg" style="text-align: center; margin-top: 50px; color: #333; font-size: 20px;">
-            SISTEMA LISTO PARA DIAGNÓSTICO
-        </div>
+    <div class="panel" style="justify-content: center; align-items: center;">
+        <h2 id="status-msg" style="color: #222;">ESPERANDO HARDWARE...</h2>
     </div>
-
     <div class="panel">
-        <h3 style="color: #555; font-size: 12px;">MONITOR DUAL</h3>
-        <div class="metric-card"><small>APP1 PEDAL</small><div id="d1" class="val">--.--- V</div></div>
-        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 PEDAL</small><div id="d2" class="val">--.--- V</div></div>
-        
-        <h3 style="color: var(--neon-green); font-size: 12px; margin-top: 20px;">LOG DE YULS</h3>
-        <div class="yuls-console" id="yuls-out">> Esperando conexión...</div>
+        <h3>DATOS REALES</h3>
+        <div class="metric-card"><small>APP1 (PIN 34)</small><div id="d1" class="val">0.000 V</div></div>
+        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 (PIN 35)</small><div id="d2" class="val">0.000 V</div></div>
+        <div id="yuls-log">> Sistema listo...</div>
     </div>
 </div>
 
@@ -139,52 +52,74 @@
 </div>
 
 <script>
-    const log = document.getElementById('yuls-out');
-    let graphActive = false;
+    let puerto;
+    let lector;
+    const log = document.getElementById('yuls-log');
 
-    function iniciarV12() {
-        document.getElementById('intro-screen').style.display = 'none';
-        log.innerHTML += "<br>> Bienvenido, socio MILLAN. Sistema cargado.";
+    // CONEXIÓN REAL POR PUERTO SERIAL (USB V-LINK)
+    async function conectarReal() {
+        if ("serial" in navigator) {
+            try {
+                // Solicita al usuario seleccionar el puerto USB del V-Link
+                puerto = await navigator.serial.requestPort();
+                await puerto.open({ baudRate: 9600 }); // Ajusta según tu V-Link
+                
+                document.getElementById('vlink-tag').style.color = '#39ff14';
+                document.getElementById('vlink-tag').innerText = '● V-LINK ONLINE';
+                log.innerHTML += "<br>> V-Link Conectado en puerto físico.";
+                alert("¡Sincronización Real Exitosa con V-Link!");
+            } catch (err) {
+                log.innerHTML += "<br>> Error: No se seleccionó puerto.";
+            }
+        } else {
+            alert("Tu navegador no soporta conexión directa. Usa Chrome o Edge.");
+        }
+    }
+
+    // LECTURA DE DATOS REALES DEL HARDWARE
+    async function leerSensores() {
+        if (!puerto) return alert("Primero conecta el V-Link, carnal.");
+        
+        log.innerHTML += "<br>> Iniciando lectura de flujo de datos...";
         initPlot();
+
+        while (puerto.readable) {
+            lector = puerto.readable.getReader();
+            try {
+                while (true) {
+                    const { value, done } = await lector.read();
+                    if (done) break;
+                    
+                    // Aquí procesamos los datos que envía el V-Link
+                    // Supongamos que el V-Link manda: "0.512,0.256"
+                    let decoded = new TextDecoder().decode(value);
+                    let datos = decoded.split(',');
+                    
+                    if(datos.length >= 2) {
+                        let v1 = parseFloat(datos[0]);
+                        let v2 = parseFloat(datos[1]);
+                        
+                        document.getElementById('d1').innerText = v1.toFixed(3) + " V";
+                        document.getElementById('d2').innerText = v2.toFixed(3) + " V";
+                        Plotly.extendTraces('full-graph', {y: [[v1], [v2]]}, [0, 1]);
+                    }
+                }
+            } catch (error) {
+                log.innerHTML += "<br>> Error en lectura: " + error;
+            } finally {
+                lector.releaseLock();
+            }
+        }
     }
 
     function initPlot() {
         Plotly.newPlot('full-graph', [
-            {y:[], mode:'lines', name:'SEÑAL A', line:{color:'#39ff14', width:2}},
-            {y:[], mode:'lines', name:'SEÑAL B', line:{color:'#00d4ff', width:2}}
+            {y:[], mode:'lines', name:'APP1', line:{color:'#39ff14'}},
+            {y:[], mode:'lines', name:'APP2', line:{color:'#00d4ff'}}
         ], {
             paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-            font: {color: '#888'}, margin: {t:30, b:40, l:50, r:20},
-            xaxis: {showgrid: false}, yaxis: {gridcolor: '#111'}
+            font: {color: '#888'}, margin: {t:10, b:40, l:50, r:20}
         });
-    }
-
-    function cmd(type) {
-        if(type === 'scanner') {
-            document.getElementById('vlink-tag').style.color = 'var(--neon-green)';
-            document.getElementById('vlink-tag').innerText = 'V-LINK STATUS: ONLINE (UID-V12)';
-            log.innerHTML += "<br>> V-Link sincronizado con ECU Bosch Motronic.";
-        }
-        if(type === 'sensores' || type === 'tba') {
-            log.innerHTML += `<br>> Ejecutando lectura de sensores en tiempo real...`;
-            document.getElementById('center-msg').innerText = "MONITORIZANDO CAN-BUS...";
-            document.getElementById('center-msg').style.color = "var(--neon-blue)";
-            graphActive = true;
-            setInterval(updateData, 200);
-        }
-        if(type === 'propart') {
-            log.innerHTML += "<br>> Accediendo a base de datos PRO PART DATE 1990-2025...";
-            alert("Acceso concedido a la nube ProPart.");
-        }
-    }
-
-    function updateData() {
-        if(!graphActive) return;
-        let v1 = (Math.random() * 4.5).toFixed(3);
-        let v2 = (v1 / 2).toFixed(3);
-        document.getElementById('d1').innerText = v1 + " V";
-        document.getElementById('d2').innerText = v2 + " V";
-        Plotly.extendTraces('full-graph', {y: [[v1], [v2]]}, [0, 1]);
     }
 </script>
 </body>
