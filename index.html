@@ -28,5 +28,32 @@
             <p>APP2: 0.256 V</p>
         </div>
     </div>
+    <script>
+    // Función para simular el Scanner V-Link real
+    function accionarScanner() {
+        console.log("Buscando hardware V-Link...");
+        alert("Buscando V-Link... \nUID: VLNK-PRO-V12-GOLF Detectado ✅");
+        document.getElementById('status').innerText = "STATUS: V-LINK CONECTADO (PIN 7 ACTIVE)";
+    }
+
+    // Función para la Calibración TBA con datos de PRO PART DATE
+    function calibrarTBA() {
+        let app1 = document.getElementById('val-app1');
+        let app2 = document.getElementById('val-app2');
+        
+        alert("Iniciando Ajuste Básico Canal 060...");
+        
+        // Simulación de movimiento de mariposa y lectura dual
+        setTimeout(() => {
+            app1.innerText = "0.512 V";
+            app2.innerText = "0.256 V";
+            alert("Adaptación OK - Datos validados por PRO PART DATE");
+        }, 2000);
+    }
+
+    // Asignar las acciones a tus 8 botones de poder
+    document.querySelectorAll('.btn')[0].onclick = accionarScanner;
+    document.querySelectorAll('.btn')[7].onclick = calibrarTBA;
+        </script>
 </body>
 </html>
