@@ -2,96 +2,92 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>PROPART V12 | DIAGNOSTIC PRO PART PREDICTIVO</title>
+    <title>PROPART V12 - OPERACIÓN REAL</title>
     <style>
-        body { background: #0b0e14; color: #00ffcc; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
-        header { padding: 15px; border-bottom: 2px solid #00ffcc; display: flex; justify-content: space-between; }
-        .grid { display: flex; height: 90vh; }
-        #canvas { flex: 2; border: 1px solid #333; margin: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1c252e 0%, #0b0e14 100%); }
-        #panel { flex: 1; background: #161b22; padding: 25px; border-left: 2px solid #00ffcc; overflow-y: auto; }
-        .btn { width: 100%; padding: 12px; margin: 8px 0; background: none; border: 1px solid #00ffcc; color: #00ffcc; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 15px #00ffcc; }
-        .data-card { background: #000; padding: 15px; margin-top: 20px; border-left: 4px solid #ff33cc; }
-        .metric { font-size: 24px; color: #fff; }
-        #status-log { font-family: monospace; font-size: 12px; color: #888; margin-top: 10px; }
+        :root { --neon: #00ffcc; --pink: #ff33cc; --bg: #0b0e14; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', Courier, monospace; margin: 0; }
+        .top-bar { padding: 10px 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; background: #161b22; }
+        .main-layout { display: flex; height: 90vh; }
+        #render-3d { flex: 2; border: 1px solid #222; margin: 15px; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1a232e 0%, #0b0e14 100%); }
+        #sidebar { flex: 1; background: #161b22; padding: 20px; border-left: 2px solid var(--neon); overflow-y: auto; }
+        .btn-pwr { width: 100%; padding: 15px; margin: 10px 0; background: transparent; border: 1px solid var(--neon); color: var(--neon); font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-pwr:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
+        .monitor-dual { background: #000; padding: 20px; border: 1px solid var(--pink); border-radius: 5px; margin-top: 20px; }
+        .val { font-size: 28px; color: #fff; text-shadow: 0 0 5px var(--neon); }
+        #console { font-size: 12px; color: #666; padding: 10px; height: 60px; border: 1px solid #333; overflow: hidden; }
     </style>
 </head>
 <body>
 
-<header>
-    <div><h1>PROPART <span style="color:#fff;">V12</span></h1><small>SOCIO: MILLAN | BASE: PRO PART DATE</small></div>
-    <div style="text-align:right;"><span id="vlink-status" style="color:red;">●</span> V-LINK DISCONNECTED</div>
-</header>
+<div class="top-bar">
+    <div><strong>PROPART V12</strong> | BASE: PRO PART DATE</div>
+    <div id="vlink-tag" style="color: #444;">V-LINK DISCONNECTED 🔴</div>
+</div>
 
-<div class="grid">
-    <section id="canvas">
-        <div id="visual-engine" style="text-align:center;">
-            <h2 id="engine-title" style="color:#444;">ESPERANDO ACCIÓN...</h2>
-            <div id="graph-sim" style="height:150px; width:300px; border:1px solid #222; margin-top:20px; display:none;">
-                <p style="font-size:10px;">[ MONITOR DE ONDA EN VIVO ]</p>
-                <div id="wave" style="width:100%; height:2px; background:#00ffcc; margin-top:40px;"></div>
+<div class="main-layout">
+    <div id="render-3d">
+        <div id="display-engine" style="text-align: center;">
+            <h2 id="msg-central" style="color: #333;">SISTEMA EN ESPERA...</h2>
+            <div id="canvas-sim" style="width: 300px; height: 100px; border: 1px solid #333; display: none; align-items: center; justify-content: center;">
+                <div style="width: 80%; height: 2px; background: var(--neon); box-shadow: 0 0 10px var(--neon);"></div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <aside id="panel">
-        <h3>8 DE PODER</h3>
-        <button class="btn" onclick="scannerVLink()">SCANNER V-LINK</button>
-        <button class="btn" onclick="mostrarSincro()">SINCRONIZACIÓN</button>
-        <button class="btn" onclick="calibrarTBA()">CALIBRAR TBA</button>
-        <button class="btn" onclick="verSensores()">SENSORES DUALES</button>
-        <button class="btn">DIAGRAMAS</button>
-        <button class="btn">MAPEO DLC</button>
-        <button class="btn">DTC FALLAS</button>
-        <button class="btn">PRO PART DATE</button>
-
-        <div class="data-card">
-            <small>MONITOR DUAL (PREDICCIÓN)</small>
-            <div class="metric">APP1: <span id="val-app1">---</span> V</div>
-            <div class="metric">APP2: <span id="val-app2">---</span> V</div>
+    <div id="sidebar">
+        <div id="console">> Sistema listo. Esperando al socio Millan...</div>
+        
+        <button class="btn-pwr" onclick="scannerVLink()">Scanner V-Link</button>
+        <button class="btn-pwr" onclick="sincroRealTime()">Sincro CKP/CMP</button>
+        <button class="btn-pwr" onclick="calibrarTBA()">Calibrar TBA</button>
+        
+        <div class="monitor-dual">
+            <small>MONITOR DUAL - PRO PART DATE</small>
+            <div>APP1: <span id="val1" class="val">---</span> V</div>
+            <div>APP2: <span id="val2" class="val">---</span> V</div>
         </div>
-        <div id="status-log">> Esperando hardware...</div>
-    </aside>
+        
+        <button class="btn-pwr" style="margin-top: 20px; border-color: #666; color: #666;">Mapeo DLC (Pin 7)</button>
+    </div>
 </div>
 
 <script>
-    const log = document.getElementById('status-log');
+    const consoleLog = document.getElementById('console');
     
     function scannerVLink() {
-        log.innerText = "> Buscando V-Link en Pin 7 (K-Line)...";
+        consoleLog.innerHTML = "> Buscando hardware V-Link en puerto serial...";
         setTimeout(() => {
-            document.getElementById('vlink-status').style.color = "#00ffcc";
-            document.getElementById('vlink-status').parentElement.innerHTML = '<span style="color:#00ffcc;">●</span> V-LINK CONNECTED (UID: VLNK-PRO-V12)';
-            log.innerText = "> Hardware encontrado. Protocolo Motronic 7.5 listo.";
-            alert("V-Link Conectado con éxito carnal!");
-        }, 1500);
+            document.getElementById('vlink-tag').innerHTML = "V-LINK CONNECTED 🟢";
+            document.getElementById('vlink-tag').style.color = "#00ffcc";
+            consoleLog.innerHTML = "> UID: VLNK-PRO-V12 Detectado. <br> Acceso concedido a PRO PART DATE.";
+            alert("¡Ya tenemos comunicación con el coche, carnal!");
+        }, 1000);
     }
 
     function calibrarTBA() {
-        log.innerText = "> Iniciando Ajuste Básico Canal 060...";
-        document.getElementById('engine-title').innerText = "CALIBRANDO CUERPO...";
-        document.getElementById('engine-title').style.color = "#ff33cc";
+        consoleLog.innerHTML = "> Iniciando secuencia de aprendizaje (TBA)...";
+        document.getElementById('msg-central').innerHTML = "CALIBRANDO MARIPOSA...";
+        document.getElementById('msg-central').style.color = "#ff33cc";
         
-        let i = 0;
-        let interval = setInterval(() => {
-            document.getElementById('val-app1').innerText = (Math.random() * (4.5 - 0.5) + 0.5).toFixed(3);
-            document.getElementById('val-app2').innerText = (Math.random() * (2.3 - 0.2) + 0.2).toFixed(3);
-            i++;
-            if(i > 20) {
-                clearInterval(interval);
-                document.getElementById('val-app1').innerText = "0.512";
-                document.getElementById('val-app2').innerText = "0.256";
-                document.getElementById('engine-title').innerText = "ADAPTACIÓN OK";
-                log.innerText = "> Datos guardados en PRO PART DATE.";
-                alert("Calibración terminada al 100, socio!");
+        let count = 0;
+        let tbaInterval = setInterval(() => {
+            document.getElementById('val1').innerText = (Math.random() * (4.2 - 0.8) + 0.8).toFixed(3);
+            document.getElementById('val2').innerText = (Math.random() * (2.1 - 0.4) + 0.4).toFixed(3);
+            count++;
+            if(count > 15) {
+                clearInterval(tbaInterval);
+                document.getElementById('val1').innerText = "0.512";
+                document.getElementById('val2').innerText = "0.256";
+                document.getElementById('msg-central').innerHTML = "ADAPTACIÓN OK";
+                consoleLog.innerHTML = "> Valores guardados. Ajuste básico finalizado.";
             }
-        }, 100);
+        }, 150);
     }
 
-    function mostrarSincro() {
-        document.getElementById('graph-sim').style.display = "block";
-        document.getElementById('engine-title').innerText = "SINCRO CKP/CMP";
-        log.innerText = "> Validando fase: 0.0° de desfase.";
+    function sincroRealTime() {
+        document.getElementById('canvas-sim').style.display = "flex";
+        document.getElementById('msg-central').innerHTML = "FASE DE MOTOR";
+        consoleLog.innerHTML = "> Analizando CKP/CMP... <br> Sincronización perfecta 0.0°";
     }
 </script>
 
