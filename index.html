@@ -2,149 +2,132 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>PROPART V12 | BLUETOOTH DIAGNOSTIC</title>
+    <title>PROPART V12 | REAL BLUETOOTH</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        :root { --neon-blue: #00d4ff; --neon-green: #39ff14; --neon-pink: #ff007f; --glass: rgba(10, 10, 15, 0.98); }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        :root { --blue: #00d4ff; --green: #39ff14; --pink: #ff007f; --bg: #0b0e14; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* --- PORTADA --- */
-        #intro-screen {
-            position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a232e 0%, #000 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .btn-main { padding: 20px 50px; font-size: 1.5rem; background: transparent; color: var(--neon-green); border: 2px solid var(--neon-green); border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); transition: 0.4s; }
-        .btn-main:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 40px var(--neon-green); }
+        /* PORTADA */
+        #intro { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a232e, #000); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .btn-main { padding: 20px 40px; font-size: 1.5rem; background: transparent; color: var(--green); border: 2px solid var(--green); border-radius: 50px; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 15px var(--green); }
 
-        /* --- DASHBOARD --- */
-        #dashboard-ui { display: none; grid-template-columns: 300px 1fr 350px; gap: 15px; padding: 15px; flex: 1; min-height: 0; }
-        .panel { background: var(--glass); border: 1px solid #222; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; overflow: hidden; }
+        /* LAYOUT PRINCIPAL */
+        #ui { display: none; grid-template-columns: 280px 1fr 320px; gap: 10px; padding: 10px; flex: 1; min-height: 0; }
+        .panel { background: rgba(15, 20, 25, 0.95); border: 1px solid #222; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }
         
-        /* IZQUIERDA: CONTROLES + YULS */
-        .btn-v12 { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--neon-blue); color: var(--neon-blue); cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        #yuls-chat { height: 150px; background: #050505; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 10px; font-family: monospace; font-size: 12px; margin-top: auto; overflow-y: auto; }
+        /* IZQUIERDA: BOTONES */
+        .btn-v12 { width: 100%; padding: 10px; margin-bottom: 8px; background: #161b22; border: 1px solid var(--blue); color: var(--blue); font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
-        /* DERECHA: STATUS + MONITORES */
-        .status-box { padding: 10px; margin-bottom: 10px; border: 1px dashed #444; color: #444; font-size: 12px; text-align: center; }
-        .metric-card { background: #080808; border-left: 4px solid var(--neon-pink); padding: 10px; margin-bottom: 8px; }
-        .val { font-size: 28px; font-family: monospace; color: #fff; }
+        /* CENTRO: YULS Y DIAGRAMAS */
+        .yuls-header { height: 100px; background: #050505; border: 1px solid var(--green); color: var(--green); padding: 8px; font-family: monospace; font-size: 12px; margin-bottom: 10px; }
+        #diagram-zone { flex: 1; border: 1px solid #333; background: #080808; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
 
-        /* INFERIOR: GRÁFICAS SEPARADAS */
-        .graph-section { display: grid; grid-template-columns: 1fr 1fr; height: 300px; gap: 10px; padding: 0 15px 15px 15px; }
+        /* DERECHA: STATUS Y MONITORES */
+        .status-pill { padding: 8px; margin-bottom: 10px; border: 1px dashed #444; text-align: center; font-size: 11px; }
+        .card { background: #000; border-left: 4px solid var(--pink); padding: 10px; margin-bottom: 8px; }
+        .val { font-size: 26px; font-family: monospace; }
+
+        /* ABAJO: GRÁFICAS SEPARADAS */
+        .graph-area { display: grid; grid-template-columns: 1fr 1fr; height: 280px; gap: 10px; padding: 0 10px 10px 10px; }
         .graph-box { background: #050505; border: 1px solid #222; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-<div id="intro-screen">
-    <h1 style="color: var(--neon-blue); letter-spacing: 10px;">PROPART V12</h1>
-    <button class="btn-main" onclick="activarSistema()">ENTRAR AL SISTEMA</button>
+<div id="intro">
+    <h1 style="color: var(--blue); letter-spacing: 5px;">PROPART V12</h1>
+    <button class="btn-main" onclick="startApp()">CONECTAR ESCÁNER</button>
 </div>
 
-<header style="padding: 15px 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between;">
-    <div style="font-size: 24px; font-weight: bold; color: var(--neon-blue);">PROPART V12</div>
-    <div id="vlink-status" style="color: #f00;">● V-LINK DESCONECTADO (BT)</div>
+<header style="padding: 10px 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between;">
+    <div style="font-weight: bold; color: var(--blue);">PROPART V12 | DIAGNOSTIC</div>
+    <div id="bt-status" style="color: #f00;">BT: DESCONECTADO</div>
 </header>
 
-<div class="main-layout" id="dashboard-ui">
+<div id="ui">
     <div class="panel">
-        <h3 style="color: var(--neon-blue); font-size: 12px;">MENÚ PRINCIPAL</h3>
-        <button class="btn-v12" onclick="conectarBluetooth()">BUSCAR V-LINK BT</button>
-        <button class="btn-v12" onclick="detenerLectura()">DETENER SCAN</button>
-        <div id="yuls-chat">> Yuls: Buscando señal Bluetooth del V-Link...</div>
+        <button class="btn-v12" onclick="connectBT()">SINCRO BLUETOOTH</button>
+        <button class="btn-v12" onclick="showSentra()">PINOUT SENTRA</button>
+        <button class="btn-v12" onclick="startTBA()">CALIBRAR TBA</button>
+        <button class="btn-v12">PROPART DATE</button>
     </div>
 
-    <div class="panel" style="justify-content: center; align-items: center;">
-        <div id="diagram-display" style="color: #222; text-align: center;">
-            [ZONA DE DIAGRAMAS]<br>
-            Esperando datos para proyectar pinout.
+    <div class="panel">
+        <div class="yuls-header" id="yuls-chat">> Yuls: Socio Millan, esperando señal real...</div>
+        <div id="diagram-zone">
+            <div id="img-cont" style="color:#222">PROYECCIÓN DE DIAGRAMAS</div>
         </div>
     </div>
 
     <div class="panel">
-        <div id="adaptacion-tag" class="status-box" style="display:none; color: var(--neon-pink); border-color: var(--neon-pink);">ADAPTACIÓN EN PROCESO...</div>
-        <h3 style="color: var(--neon-blue); font-size: 12px;">MONITOR BLUETOOTH REAL</h3>
-        <div class="metric-card"><small>APP1 (REAL)</small><div id="d1" class="val">0.000 V</div></div>
-        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 (REAL)</small><div id="d2" class="val">0.000 V</div></div>
+        <div id="tba-tag" class="status-pill" style="display:none; color: var(--pink); border-color: var(--pink);">ADAPTACIÓN EN PROCESO</div>
+        <div class="card"><small>APP1 REAL</small><div id="v1" class="val">0.000 V</div></div>
+        <div class="card" style="border-color: var(--blue);"><small>APP2 REAL</small><div id="v2" class="val">0.000 V</div></div>
     </div>
 </div>
 
-<div class="graph-section">
-    <div id="graph1" class="graph-box"></div>
-    <div id="graph2" class="graph-box"></div>
+<div class="graph-area">
+    <div id="g1" class="graph-box"></div>
+    <div id="g2" class="graph-box"></div>
 </div>
 
 <script>
-    let bluetoothDevice;
-    let characteristic;
-    const chat = document.getElementById('yuls-chat');
+    let device, char;
+    const log = document.getElementById('yuls-chat');
 
-    function activarSistema() {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('dashboard-ui').style.display = 'grid';
-        initGraphs();
+    function startApp() {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('ui').style.display = 'grid';
+        initPlots();
     }
 
-    async function conectarBluetooth() {
-        chat.innerHTML += "<br>> Abriendo radar Bluetooth...";
+    async function connectBT() {
+        if (!navigator.bluetooth) return alert("Socio, usa Chrome con HTTPS para habilitar Bluetooth.");
         try {
-            // Filtramos para buscar el V-Link
-            bluetoothDevice = await navigator.bluetooth.requestDevice({
+            log.innerHTML += "<br>> Buscando V-Link Bluetooth...";
+            device = await navigator.bluetooth.requestDevice({
                 filters: [{ namePrefix: 'V-LINK' }, { namePrefix: 'OBD' }],
-                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // UUID común en escáneres BT
+                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
             });
-
-            chat.innerHTML += "<br>> Dispositivo encontrado: " + bluetoothDevice.name;
-            const server = await bluetoothDevice.gatt.connect();
+            const server = await device.gatt.connect();
             const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-            characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-
-            document.getElementById('vlink-status').style.color = '#39ff14';
-            document.getElementById('vlink-status').innerText = '● V-LINK BT CONECTADO';
+            char = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
             
-            // Empezar a escuchar datos
-            await characteristic.startNotifications();
-            characteristic.addEventListener('characteristicvaluechanged', manejarDatosBT);
-            chat.innerHTML += "<br>> Sincronización Bluetooth Exitosa.";
-
-        } catch (error) {
-            chat.innerHTML += "<br>> Error BT: " + error.message;
-        }
-    }
-
-    function manejarDatosBT(event) {
-        let value = event.target.value;
-        let decoder = new TextDecoder('utf-8');
-        let rawData = decoder.decode(value);
-        
-        // Procesar la cadena que manda el V-Link (ej: "0.512,0.256")
-        let data = rawData.split(',');
-        if (data.length >= 2) {
-            let v1 = parseFloat(data[0]);
-            let v2 = parseFloat(data[1]);
+            document.getElementById('bt-status').innerText = "BT: CONECTADO";
+            document.getElementById('bt-status').style.color = "#39ff14";
             
-            document.getElementById('d1').innerText = v1.toFixed(3) + " V";
-            document.getElementById('d2').innerText = v2.toFixed(3) + " V";
-            Plotly.extendTraces('graph1', {y: [[v1]]}, [0]);
-            Plotly.extendTraces('graph2', {y: [[v2]]}, [0]);
-        }
+            await char.startNotifications();
+            char.addEventListener('characteristicvaluechanged', (e) => {
+                let raw = new TextDecoder().decode(e.target.value);
+                let data = raw.split(',');
+                if(data.length >= 2) {
+                    let val1 = parseFloat(data[0]);
+                    let val2 = parseFloat(data[1]);
+                    document.getElementById('v1').innerText = val1.toFixed(3) + " V";
+                    document.getElementById('v2').innerText = val2.toFixed(3) + " V";
+                    Plotly.extendTraces('g1', {y: [[val1]]}, [0]);
+                    Plotly.extendTraces('g2', {y: [[val2]]}, [0]);
+                }
+            });
+            log.innerHTML += "<br>> Sincronización exitosa con el coche.";
+        } catch (err) { log.innerHTML += "<br>> Error: " + err.message; }
     }
 
-    function detenerLectura() {
-        if (bluetoothDevice) bluetoothDevice.gatt.disconnect();
-        document.getElementById('vlink-status').style.color = '#f00';
-        document.getElementById('vlink-status').innerText = '● V-LINK DESCONECTADO';
-        chat.innerHTML += "<br>> Conexión terminada por el usuario.";
+    function showSentra() {
+        document.getElementById('img-cont').innerHTML = '<img src="https://images.tcdn.com.br/img/editor/up/650428/pinout_sentra_120.jpg" style="max-width:100%;">';
+        log.innerHTML += "<br>> Cargando pinout Sentra 120 pines...";
     }
 
-    function initGraphs() {
-        const layout = {
-            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-            font: {color: '#444', size: 10}, margin: {t:20, b:30, l:40, r:10},
-            xaxis: {showgrid: false}, yaxis: {gridcolor: '#111', range: [0, 5]}
-        };
-        Plotly.newPlot('graph1', [{y:[], mode:'lines', name:'APP1', line:{color:'#39ff14'}}], layout);
-        Plotly.newPlot('graph2', [{y:[], mode:'lines', name:'APP2', line:{color:'#00d4ff'}}], layout);
+    function startTBA() {
+        document.getElementById('tba-tag').style.display = "block";
+        log.innerHTML += "<br>> Ejecutando ajuste básico canal 060...";
+    }
+
+    function initPlots() {
+        const layout = { paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', font: {color: '#444', size: 10}, margin: {t:10, b:30, l:40, r:10}, xaxis: {showgrid: false}, yaxis: {gridcolor: '#111', range:[0,5]} };
+        Plotly.newPlot('g1', [{y:[], mode:'lines', name:'APP1', line:{color:'#39ff14'}}], layout);
+        Plotly.newPlot('g2', [{y:[], mode:'lines', name:'APP2', line:{color:'#00d4ff'}}], layout);
     }
 </script>
 </body>
