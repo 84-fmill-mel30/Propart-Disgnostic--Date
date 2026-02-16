@@ -3,244 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROPART V12 | DIAGNOSTIC PREDICTIVO</title>
+    <title>PROPART V12 | HIGH-END DIAGNOSTIC</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         :root {
             --neon-blue: #00d4ff;
             --neon-green: #39ff14;
             --neon-pink: #ff007f;
-            --glass-bg: rgba(11, 14, 20, 0.9);
-            --panel-border: rgba(0, 212, 255, 0.3);
-            --main-bg-image: url('https://via.placeholder.com/1920x1080/000000/cccccc?text=AUTO+MODERNO+FUTURISTA'); /* IMAGEN DEL COCHE */
+            --glass: rgba(11, 14, 20, 0.95);
         }
 
         body {
-            background: var(--main-bg-image) no-repeat center center fixed;
-            background-size: cover;
+            background: #000; /* Fondo negro profundo */
             color: #fff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
             height: 100vh;
         }
 
-        /* --- PANTALLA DE INICIO --- */
+        /* --- PORTADA DE ALTA GAMA --- */
         #intro-screen {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a232e 0%, #000 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 999;
+            transition: opacity 0.8s ease;
         }
-        #intro-screen h1 { font-size: 4em; color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); }
-        #intro-screen p { font-size: 1.5em; color: #aaa; margin-top: -20px; }
-        .btn-connect {
-            padding: 20px 40px;
-            font-size: 1.8em;
+
+        .btn-main-connect {
+            padding: 25px 60px;
+            font-size: 1.5rem;
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+            transition: all 0.4s;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .btn-main-connect:hover {
             background: var(--neon-green);
             color: #000;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 0 30px var(--neon-green);
-            transition: 0.3s;
-            margin-top: 50px;
+            box-shadow: 0 0 50px var(--neon-green);
+            transform: scale(1.05);
         }
-        .btn-connect:hover { transform: scale(1.05); box-shadow: 0 0 50px var(--neon-green); }
 
-
-        /* --- HEADER Y LAYOUT (EL MISMO PERO INVISIBLE AL INICIO) --- */
-        header {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px 30px;
-            border-bottom: 2px solid var(--neon-blue);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
-            display: none; /* INVISIBLE AL INICIO */
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 320px 1fr 380px;
+        /* --- DASHBOARD (OCULTO AL INICIO) --- */
+        #dashboard-ui {
+            display: none; /* Se activa al conectar */
+            grid-template-columns: 320px 1fr 350px;
             gap: 15px;
             padding: 15px;
-            flex-grow: 1;
-            display: none; /* INVISIBLE AL INICIO */
+            height: 100vh;
+            box-sizing: border-box;
         }
 
-        /* --- PANELES, BOTONES Y GRÁFICAS (MISMOS ESTILOS) --- */
         .panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 12px;
-            padding: 15px;
-            backdrop-filter: blur(10px);
+            background: var(--glass);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
-        .btn {
-            background: rgba(255, 255, 255, 0.05);
+
+        .btn-tool {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.03);
             border: 1px solid var(--neon-blue);
             color: var(--neon-blue);
-            padding: 12px 5px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
             cursor: pointer;
+            font-weight: bold;
             transition: 0.3s;
-            text-transform: uppercase;
         }
-        .btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
-        .btn-active { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
 
-        .data-card {
-            background: rgba(0,0,0,0.6);
+        .btn-tool:hover { background: var(--neon-blue); color: #000; }
+
+        #live-graph { flex-grow: 1; margin-top: 15px; border-radius: 10px; overflow: hidden; }
+
+        .metric-box {
+            background: #000;
             border-left: 4px solid var(--neon-pink);
             padding: 15px;
             margin-bottom: 10px;
         }
-        .data-label { font-size: 10px; color: #888; text-transform: uppercase; }
-        .data-value { font-size: 28px; font-family: 'Courier New', monospace; color: #fff; }
 
-        .console {
-            background: #000;
-            padding: 10px;
+        .console-log {
+            background: #050505;
+            color: var(--neon-green);
             font-family: monospace;
             font-size: 11px;
-            color: var(--neon-green);
-            height: 80px;
+            padding: 10px;
+            height: 100px;
             overflow-y: auto;
             border: 1px solid #222;
         }
-        #live-graph { height: 250px; background: rgba(0,0,0,0.5); border-radius: 12px; }
-        .engine-view {
-            flex-grow: 1;
-            background: url('https://via.placeholder.com/600x400/000000/00d4ff?text=MOTOR+3D+RENDER') center no-repeat; /* Puedes cambiar esta URL por el render 3D */
-            background-size: contain;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .commands-panel { display: none; } /* EL PANEL DE BOTONES SE OCULTA AL PRINCIPIO */
     </style>
 </head>
 <body>
 
 <div id="intro-screen">
-    <h1>PROPART <span style="color:#fff">V12</span></h1>
-    <p>El Futuro del Diagnóstico Predictivo</p>
-    <button class="btn-connect" onclick="initSystem()">CONECTAR ESCÁNER</button>
+    <h1 style="letter-spacing: 10px; color: var(--neon-blue);">PROPART V12</h1>
+    <p style="color: #666; margin-top: -15px;">ADVANCED PREDICTIVE DIAGNOSTICS</p>
+    <button class="btn-main-connect" onclick="activateSystem()">Conectar Escáner</button>
 </div>
 
-<header id="main-header">
-    <div class="logo-box">
-        <h1>PROPART <span style="color:#fff">V12</span></h1>
-        <small>Base de Datos: PRO PART DATE | Socio: MILLAN</small>
-    </div>
-    <div class="status-bar">
-        <span class="dot" id="vlink-dot"></span> <span id="vlink-text">V-LINK DISCONNECTED</span> | 
-        <span style="color: var(--neon-green)">AES-256 ENCRYPTION ACTIVE</span>
-    </div>
-</header>
-
-<div class="dashboard" id="main-dashboard">
+<div id="dashboard-ui">
     <div class="panel">
-        <h3 style="color: var(--neon-blue); font-size: 14px; margin-top: 0;">MENÚ PRINCIPAL</h3>
-        <div class="btn-grid commands-panel" id="left-commands">
-            <button class="btn" onclick="connectVLink()">Scanner V-Link</button>
-            <button class="btn" onclick="verSensores()">Sensores (Live)</button>
-            <button class="btn" onclick="startTBA()">Calibrar TBA</button>
-            <button class="btn" onclick="startSincro()">Sincro CKP/CMP</button>
-            <button class="btn">DTC Fallas</button>
-            <button class="btn">Diagramas</button>
-            <button class="btn">Mapeo DLC</button>
-            <button class="btn">Pro Part Date</button>
-        </div>
-        
-        <h3 style="color: var(--neon-pink); font-size: 14px; margin-top: 20px;">CÓDIGOS DE FALLA (DTC)</h3>
-        <div style="font-size: 12px; color: #666;">
-            <input type="checkbox" checked> P0121 - Sensor APP1<br>
-            <input type="checkbox"> P0300 - Misfire Detected<br>
-        </div>
-
-        <div style="margin-top: auto;">
-            <button class="btn-active" style="width: 100%; padding: 15px; font-size: 18px; border:none; border-radius: 8px; cursor: pointer;">ONC</button>
-        </div>
+        <h3 style="color: var(--neon-blue); margin-top: 0;">MENÚ PRINCIPAL</h3>
+        <button class="btn-tool" onclick="runScan()">Scanner V-Link</button>
+        <button class="btn-tool" onclick="viewSensors()">Sensores (Live)</button>
+        <button class="btn-tool" onclick="runTBA()">Calibrar TBA</button>
+        <button class="btn-tool">Sincro CKP/CMP</button>
+        <button class="btn-tool">DTC Fallas</button>
+        <button class="btn-tool">Diagramas</button>
+        <button class="btn-tool">Mapeo DLC</button>
+        <button class="btn-tool" style="border-color: var(--neon-green); color: var(--neon-green);">PRO PART DATE</button>
     </div>
 
-    <div class="panel" style="display: flex; flex-direction: column;">
-        <div class="engine-view" id="main-view">
-            <div id="render-msg" style="color: #444; font-weight: bold; text-align: center;">CONECTANDO V-LINK...</div>
+    <div class="panel">
+        <div id="main-display" style="text-align: center; border: 1px dashed #333; padding: 20px; color: #444;">
+            SISTEMA LISTO - ESPERANDO SELECCIÓN
         </div>
         <div id="live-graph"></div>
     </div>
 
     <div class="panel">
-        <h3 style="color: var(--neon-blue); font-size: 14px; margin-top: 0;">MONITOR DUAL</h3>
+        <h3 style="color: var(--neon-blue); margin-top: 0;">MONITOR DUAL</h3>
+        <div class="metric-box"><small>APP1 (V)</small><div id="v1" style="font-size: 24px;">--.---</div></div>
+        <div class="metric-box" style="border-color: var(--neon-blue);"><small>APP2 (V)</small><div id="v2" style="font-size: 24px;">--.---</div></div>
         
-        <div class="data-card">
-            <div class="data-label">APP1 Sensor (Voltage)</div>
-            <div class="data-value" id="val-app1">--.--- V</div>
-        </div>
-
-        <div class="data-card" style="border-color: var(--neon-blue);">
-            <div class="data-label">APP2 Sensor (Voltage)</div>
-            <div class="data-value" id="val-app2">--.--- V</div>
-        </div>
-
-        <div class="data-card" style="border-color: var(--neon-green);">
-            <div class="data-label">RPM Motor / Inyector Pulse</div>
-            <div class="data-value" id="val-rpm">0 RPM</div>
-        </div>
-
-        <h3 style="color: var(--neon-green); font-size: 14px;">LOG DE YULS</h3>
-        <div class="console" id="yuls-log">
-            > Sistema iniciado.<br>
-            > Esperando conexión del socio Millan...
-        </div>
+        <h3 style="color: var(--neon-green); margin-top: 20px;">LOG DE YULS</h3>
+        <div class="console-log" id="log-yuls">> Conectado a central...</div>
     </div>
 </div>
 
 <script>
-    const log = document.getElementById('yuls-log');
-    let graphInterval;
+    const log = document.getElementById('log-yuls');
 
-    // Función para iniciar todo el sistema después de la portada
-    function initSystem() {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('main-header').style.display = 'flex';
-        document.getElementById('main-dashboard').style.display = 'grid';
-        
-        // Simular conexión inicial del V-Link al entrar
-        connectVLink();
-    }
-
-    // Conectar V-Link (ahora visible al inicio)
-    function connectVLink() {
-        log.innerHTML += "<br>> Buscando Hardware V-Link...";
+    function activateSystem() {
+        document.getElementById('intro-screen').style.opacity = '0';
         setTimeout(() => {
-            document.getElementById('vlink-dot').style.background = 'var(--neon-green)';
-            document.getElementById('vlink-text').innerText = 'V-LINK CONNECTED (UID: VLNK-V12)';
-            log.innerHTML += "<br>> V-Link Conectado en Pin 7 (K-Line).";
-            document.getElementById('render-msg').innerText = "V-LINK CONECTADO ✅";
-            document.getElementById('render-msg').style.color = "var(--neon-green)";
-            
-            // Mostrar los botones del panel izquierdo SÓLO AHORA
-            document.getElementById('left-commands').style.display = 'grid'; 
-        }, 1500);
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('dashboard-ui').style.display = 'grid';
+            log.innerHTML += "<br>> V-Link Inicializado en Golf A4.";
+            initGraph();
+        }, 800);
     }
 
-    // Inicializar Gráfica (Plotly)
     function initGraph() {
-        var trace1 = { y: [], mode: 'lines', name: 'APP1', line: {color: 'var(--neon-green)'} };
-        var trace2 = { y: [], mode: '
+        Plotly.newPlot('live-graph', [{y:[], mode:'lines', name:'APP1', line:{color:'#39ff14'}}, {y:[], mode:'lines', name:'APP2', line:{color:'#00d4ff'}}], {
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#fff', size: 10}, margin: {t:10, b:20, l:30, r:10}
+        });
+    }
+
+    function viewSensors() {
+        log.innerHTML += "<br>> Leyendo datos en vivo...";
+        setInterval(() => {
+            let val1 = (Math.random() * 4).toFixed(3);
+            let val2 = (val1 / 2).toFixed(3);
+            document.getElementById('v1').innerText = val1 + " V";
+            document.getElementById('v2').innerText = val2 + " V";
+            Plotly.extendTraces('live-graph', {y: [[val1], [val2]]}, [0, 1]);
+        }, 200);
+    }
+
+    function runTBA() {
+        log.innerHTML += "<br>> Iniciando Calibración TBA...";
+        document.getElementById('main-display').innerText = "ADAPTACIÓN EN PROCESO";
+        document.getElementById('main-display').style.color = "var(--neon-pink)";
+        viewSensors();
+    }
+</script>
+</body>
+</html>
