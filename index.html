@@ -2,54 +2,32 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>PROPART V12 | HIGH-END DIAGNOSTIC</title>
+    <title>PROPART V12 | SISTEMA DE DIAGNÓSTICO REAL</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        :root {
-            --neon-blue: #00d4ff;
-            --neon-green: #39ff14;
-            --neon-pink: #ff007f;
-            --glass: rgba(11, 14, 20, 0.98);
+        :root { --neon-blue: #00d4ff; --neon-green: #39ff14; --neon-pink: #ff007f; --glass: rgba(10, 10, 15, 0.98); }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* --- PANTALLA INICIAL (PORTADA) --- */
+        #intro-screen {
+            position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a232e 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
         }
+        .btn-main { padding: 20px 50px; font-size: 1.5rem; background: transparent; color: var(--neon-green); border: 2px solid var(--neon-green); border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); transition: 0.4s; }
+        .btn-main:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 40px var(--neon-green); }
 
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        header { padding: 15px 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        #brand { font-size: 26px; font-weight: bold; color: var(--neon-blue); letter-spacing: 2px; }
-
-        /* --- LAYOUT TRES COLUMNAS --- */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr 350px;
-            gap: 15px;
-            padding: 15px;
-            flex: 1;
-            min-height: 0;
-        }
-
+        /* --- DASHBOARD --- */
+        #dashboard-ui { display: none; grid-template-columns: 300px 1fr 350px; gap: 15px; padding: 15px; flex: 1; min-height: 0; }
         .panel { background: var(--glass); border: 1px solid #222; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* IZQUIERDA: CONTROLES */
+        
+        /* IZQUIERDA: CONTROLES + YULS */
         .btn-v12 { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--neon-blue); color: var(--neon-blue); cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-v12:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 10px var(--neon-blue); }
-
-        /* CENTRO: YULS + DIAGRAMAS */
-        .yuls-dialog { height: 120px; background: #050505; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 10px; font-family: monospace; font-size: 13px; margin-bottom: 10px; overflow-y: auto; }
-        .diagram-area { flex: 1; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #080808; overflow: hidden; }
+        #yuls-chat { height: 150px; background: #050505; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 10px; font-family: monospace; font-size: 12px; margin-top: auto; overflow-y: auto; }
 
         /* DERECHA: STATUS + MONITORES */
-        .status-box { padding: 10px; margin-bottom: 10px; border: 1px dashed var(--neon-green); color: var(--neon-green); font-size: 12px; text-align: center; }
+        .status-box { padding: 10px; margin-bottom: 10px; border: 1px dashed #444; color: #444; font-size: 12px; text-align: center; }
         .metric-card { background: #080808; border-left: 4px solid var(--neon-pink); padding: 10px; margin-bottom: 8px; }
-        .val { font-size: 28px; font-family: monospace; }
+        .val { font-size: 28px; font-family: monospace; color: #fff; }
 
         /* INFERIOR: GRÁFICAS SEPARADAS */
         .graph-section { display: grid; grid-template-columns: 1fr 1fr; height: 300px; gap: 10px; padding: 0 15px 15px 15px; }
@@ -58,46 +36,35 @@
 </head>
 <body>
 
-<header>
-    <div id="brand">PROPART V12</div>
-    <div style="font-size: 12px; color: #666;">SOCIO: MILLAN | PRO PART DATE ACTIVE</div>
+<div id="intro-screen">
+    <h1 style="color: var(--neon-blue); letter-spacing: 10px;">PROPART V12</h1>
+    <button class="btn-main" onclick="activarSistema()">ENTRAR AL SISTEMA</button>
+</div>
+
+<header style="padding: 15px 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--neon-blue);">PROPART V12</div>
+    <div id="vlink-status" style="color: #f00;">● V-LINK DESCONECTADO</div>
 </header>
 
-<div class="main-layout">
+<div class="main-layout" id="dashboard-ui">
     <div class="panel">
-        <h3 style="color: var(--neon-blue); font-size: 12px; margin: 0 0 10px 0;">MENÚ PRINCIPAL</h3>
-        <button class="btn-v12" onclick="cmd('scanner')">Scanner V-Link</button>
-        <button class="btn-v12" onclick="cmd('sensores')">Sensores (Live)</button>
-        <button class="btn-v12" onclick="cmd('tba')">Calibrar TBA</button>
-        <button class="btn-v12">Diagramas</button>
-        <button class="btn-v12">PROPART DATE</button>
-        
-        <div style="margin-top: 20px;">
-            <small style="color: #444;">FILTRO DE SENSORES</small>
-            <select id="sensor-filter" style="width: 100%; background: #111; color: #fff; border: 1px solid #333; padding: 5px; margin-top: 5px;">
-                <option>APP1 vs APP2</option>
-                <option>CKP vs CMP</option>
-                <option>MAF vs RPM</option>
-            </select>
+        <h3 style="color: var(--neon-blue); font-size: 12px;">MENÚ PRINCIPAL</h3>
+        <button class="btn-v12" onclick="conectarHardware()">CONECTAR V-LINK USB</button>
+        <button class="btn-v12" onclick="iniciarDiagnostico()">INICIAR DIAGNÓSTICO</button>
+        <div id="yuls-chat">> Yuls: Esperando conexión física...</div>
+    </div>
+
+    <div class="panel" style="justify-content: center; align-items: center;">
+        <div id="diagram-display" style="color: #222; text-align: center;">
+            [ZONA DE DIAGRAMAS]<br>Proyecta aquí el Pinout del Sentra
         </div>
     </div>
 
     <div class="panel">
-        <div class="yuls-dialog" id="yuls-chat">
-            > Yuls: Hola socio Millan. ¿Qué pinout o diagrama necesitas hoy?
-        </div>
-        <div class="diagram-area" id="main-diagram">
-            <span style="color: #222;">PROYECCIÓN DE IMÁGENES Y PINES</span>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="status-box" id="vlink-status">V-LINK DISCONNECTED</div>
-        <div class="status-box" id="tba-status" style="border-color: var(--neon-pink); color: var(--neon-pink); display: none;">ADAPTACIÓN EN PROCESO...</div>
-        
-        <h3 style="color: var(--neon-blue); font-size: 12px;">MONITOR DUAL</h3>
-        <div class="metric-card"><small>APP1 / CAN A</small><div id="d1" class="val">--.--- V</div></div>
-        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 / CAN B</small><div id="d2" class="val">--.--- V</div></div>
+        <div id="adaptacion-tag" class="status-box" style="display:none; color: var(--neon-pink); border-color: var(--neon-pink);">ADAPTACIÓN EN PROCESO...</div>
+        <h3 style="color: var(--neon-blue); font-size: 12px;">MONITOR REAL</h3>
+        <div class="metric-card"><small>APP1 (V)</small><div id="d1" class="val">0.000 V</div></div>
+        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 (V)</small><div id="d2" class="val">0.000 V</div></div>
     </div>
 </div>
 
@@ -107,42 +74,64 @@
 </div>
 
 <script>
-    function cmd(type) {
-        const chat = document.getElementById('yuls-chat');
-        if(type === 'scanner') {
-            document.getElementById('vlink-status').innerText = "V-LINK CONECTADO REAL ✅";
-            document.getElementById('vlink-status').style.borderColor = "var(--neon-green)";
-            chat.innerHTML += "<br>> Sincronizando con ECU...";
+    let port;
+    let reader;
+    const chat = document.getElementById('yuls-chat');
+
+    function activarSistema() {
+        document.getElementById('intro-screen').style.display = 'none';
+        document.getElementById('dashboard-ui').style.display = 'grid';
+        initGraphs();
+    }
+
+    async function conectarHardware() {
+        if ("serial" in navigator) {
+            try {
+                port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 9600 });
+                document.getElementById('vlink-status').style.color = '#39ff14';
+                document.getElementById('vlink-status').innerText = '● V-LINK CONECTADO';
+                chat.innerHTML += "<br>> V-Link detectado en puerto físico.";
+            } catch (err) { chat.innerHTML += "<br>> Error: No se eligió puerto."; }
+        } else { alert("Usa Chrome o Edge para conexión real."); }
+    }
+
+    async function iniciarDiagnostico() {
+        if (!port) {
+            alert("Socio, no hay nada conectado. Conecta el V-Link primero.");
+            return;
         }
-        if(type === 'tba') {
-            document.getElementById('tba-status').style.display = "block";
-            chat.innerHTML += "<br>> Iniciando aprendizaje de cuerpo de aceleración...";
-            startPlot();
-        }
-        if(type === 'sensores') {
-            chat.innerHTML += "<br>> Monitorizando señales seleccionadas en filtro...";
-            startPlot();
+        chat.innerHTML += "<br>> Sincronizando flujo de datos reales...";
+        
+        while (port.readable) {
+            reader = port.readable.getReader();
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    let data = new TextDecoder().decode(value).split(',');
+                    if (data.length >= 2) {
+                        let v1 = parseFloat(data[0]);
+                        let v2 = parseFloat(data[1]);
+                        document.getElementById('d1').innerText = v1.toFixed(3) + " V";
+                        document.getElementById('d2').innerText = v2.toFixed(3) + " V";
+                        Plotly.extendTraces('graph1', {y: [[v1]]}, [0]);
+                        Plotly.extendTraces('graph2', {y: [[v2]]}, [0]);
+                    }
+                }
+            } catch (e) { chat.innerHTML += "<br>> Error de lectura."; }
+            finally { reader.releaseLock(); }
         }
     }
 
-    function startPlot() {
+    function initGraphs() {
         const layout = {
             paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-            font: {color: '#555', size: 10}, margin: {t:20, b:30, l:40, r:10},
-            xaxis: {showgrid: false}, yaxis: {gridcolor: '#111'}
+            font: {color: '#444', size: 10}, margin: {t:20, b:30, l:40, r:10},
+            xaxis: {showgrid: false}, yaxis: {gridcolor: '#111', range: [0, 5]}
         };
-
-        Plotly.newPlot('graph1', [{y:[], mode:'lines', name:'SEÑAL 1', line:{color:'#39ff14'}}], layout);
-        Plotly.newPlot('graph2', [{y:[], mode:'lines', name:'SEÑAL 2', line:{color:'#00d4ff'}}], layout);
-
-        setInterval(() => {
-            let v1 = (Math.random() * 4.5).toFixed(3);
-            let v2 = (v1 / 2).toFixed(3);
-            document.getElementById('d1').innerText = v1 + " V";
-            document.getElementById('d2').innerText = v2 + " V";
-            Plotly.extendTraces('graph1', {y: [[v1]]}, [0]);
-            Plotly.extendTraces('graph2', {y: [[v2]]}, [0]);
-        }, 200);
+        Plotly.newPlot('graph1', [{y:[], mode:'lines', name:'APP1', line:{color:'#39ff14'}}], layout);
+        Plotly.newPlot('graph2', [{y:[], mode:'lines', name:'APP2', line:{color:'#00d4ff'}}], layout);
     }
 </script>
 </body>
