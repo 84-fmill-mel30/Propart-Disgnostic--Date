@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>PROPART V12 | SISTEMA DE DIAGNÓSTICO REAL</title>
+    <title>PROPART V12 | BLUETOOTH DIAGNOSTIC</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         :root { --neon-blue: #00d4ff; --neon-green: #39ff14; --neon-pink: #ff007f; --glass: rgba(10, 10, 15, 0.98); }
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* --- PANTALLA INICIAL (PORTADA) --- */
+        /* --- PORTADA --- */
         #intro-screen {
             position: fixed; width: 100%; height: 100%; background: radial-gradient(circle, #1a232e 0%, #000 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
@@ -43,28 +43,29 @@
 
 <header style="padding: 15px 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between;">
     <div style="font-size: 24px; font-weight: bold; color: var(--neon-blue);">PROPART V12</div>
-    <div id="vlink-status" style="color: #f00;">● V-LINK DESCONECTADO</div>
+    <div id="vlink-status" style="color: #f00;">● V-LINK DESCONECTADO (BT)</div>
 </header>
 
 <div class="main-layout" id="dashboard-ui">
     <div class="panel">
         <h3 style="color: var(--neon-blue); font-size: 12px;">MENÚ PRINCIPAL</h3>
-        <button class="btn-v12" onclick="conectarHardware()">CONECTAR V-LINK USB</button>
-        <button class="btn-v12" onclick="iniciarDiagnostico()">INICIAR DIAGNÓSTICO</button>
-        <div id="yuls-chat">> Yuls: Esperando conexión física...</div>
+        <button class="btn-v12" onclick="conectarBluetooth()">BUSCAR V-LINK BT</button>
+        <button class="btn-v12" onclick="detenerLectura()">DETENER SCAN</button>
+        <div id="yuls-chat">> Yuls: Buscando señal Bluetooth del V-Link...</div>
     </div>
 
     <div class="panel" style="justify-content: center; align-items: center;">
         <div id="diagram-display" style="color: #222; text-align: center;">
-            [ZONA DE DIAGRAMAS]<br>Proyecta aquí el Pinout del Sentra
+            [ZONA DE DIAGRAMAS]<br>
+            Esperando datos para proyectar pinout.
         </div>
     </div>
 
     <div class="panel">
         <div id="adaptacion-tag" class="status-box" style="display:none; color: var(--neon-pink); border-color: var(--neon-pink);">ADAPTACIÓN EN PROCESO...</div>
-        <h3 style="color: var(--neon-blue); font-size: 12px;">MONITOR REAL</h3>
-        <div class="metric-card"><small>APP1 (V)</small><div id="d1" class="val">0.000 V</div></div>
-        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 (V)</small><div id="d2" class="val">0.000 V</div></div>
+        <h3 style="color: var(--neon-blue); font-size: 12px;">MONITOR BLUETOOTH REAL</h3>
+        <div class="metric-card"><small>APP1 (REAL)</small><div id="d1" class="val">0.000 V</div></div>
+        <div class="metric-card" style="border-color: var(--neon-blue);"><small>APP2 (REAL)</small><div id="d2" class="val">0.000 V</div></div>
     </div>
 </div>
 
@@ -74,8 +75,8 @@
 </div>
 
 <script>
-    let port;
-    let reader;
+    let bluetoothDevice;
+    let characteristic;
     const chat = document.getElementById('yuls-chat');
 
     function activarSistema() {
@@ -84,44 +85,56 @@
         initGraphs();
     }
 
-    async function conectarHardware() {
-        if ("serial" in navigator) {
-            try {
-                port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 9600 });
-                document.getElementById('vlink-status').style.color = '#39ff14';
-                document.getElementById('vlink-status').innerText = '● V-LINK CONECTADO';
-                chat.innerHTML += "<br>> V-Link detectado en puerto físico.";
-            } catch (err) { chat.innerHTML += "<br>> Error: No se eligió puerto."; }
-        } else { alert("Usa Chrome o Edge para conexión real."); }
+    async function conectarBluetooth() {
+        chat.innerHTML += "<br>> Abriendo radar Bluetooth...";
+        try {
+            // Filtramos para buscar el V-Link
+            bluetoothDevice = await navigator.bluetooth.requestDevice({
+                filters: [{ namePrefix: 'V-LINK' }, { namePrefix: 'OBD' }],
+                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // UUID común en escáneres BT
+            });
+
+            chat.innerHTML += "<br>> Dispositivo encontrado: " + bluetoothDevice.name;
+            const server = await bluetoothDevice.gatt.connect();
+            const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+            document.getElementById('vlink-status').style.color = '#39ff14';
+            document.getElementById('vlink-status').innerText = '● V-LINK BT CONECTADO';
+            
+            // Empezar a escuchar datos
+            await characteristic.startNotifications();
+            characteristic.addEventListener('characteristicvaluechanged', manejarDatosBT);
+            chat.innerHTML += "<br>> Sincronización Bluetooth Exitosa.";
+
+        } catch (error) {
+            chat.innerHTML += "<br>> Error BT: " + error.message;
+        }
     }
 
-    async function iniciarDiagnostico() {
-        if (!port) {
-            alert("Socio, no hay nada conectado. Conecta el V-Link primero.");
-            return;
-        }
-        chat.innerHTML += "<br>> Sincronizando flujo de datos reales...";
+    function manejarDatosBT(event) {
+        let value = event.target.value;
+        let decoder = new TextDecoder('utf-8');
+        let rawData = decoder.decode(value);
         
-        while (port.readable) {
-            reader = port.readable.getReader();
-            try {
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    let data = new TextDecoder().decode(value).split(',');
-                    if (data.length >= 2) {
-                        let v1 = parseFloat(data[0]);
-                        let v2 = parseFloat(data[1]);
-                        document.getElementById('d1').innerText = v1.toFixed(3) + " V";
-                        document.getElementById('d2').innerText = v2.toFixed(3) + " V";
-                        Plotly.extendTraces('graph1', {y: [[v1]]}, [0]);
-                        Plotly.extendTraces('graph2', {y: [[v2]]}, [0]);
-                    }
-                }
-            } catch (e) { chat.innerHTML += "<br>> Error de lectura."; }
-            finally { reader.releaseLock(); }
+        // Procesar la cadena que manda el V-Link (ej: "0.512,0.256")
+        let data = rawData.split(',');
+        if (data.length >= 2) {
+            let v1 = parseFloat(data[0]);
+            let v2 = parseFloat(data[1]);
+            
+            document.getElementById('d1').innerText = v1.toFixed(3) + " V";
+            document.getElementById('d2').innerText = v2.toFixed(3) + " V";
+            Plotly.extendTraces('graph1', {y: [[v1]]}, [0]);
+            Plotly.extendTraces('graph2', {y: [[v2]]}, [0]);
         }
+    }
+
+    function detenerLectura() {
+        if (bluetoothDevice) bluetoothDevice.gatt.disconnect();
+        document.getElementById('vlink-status').style.color = '#f00';
+        document.getElementById('vlink-status').innerText = '● V-LINK DESCONECTADO';
+        chat.innerHTML += "<br>> Conexión terminada por el usuario.";
     }
 
     function initGraphs() {
